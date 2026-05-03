@@ -1,7 +1,7 @@
 import User from '../Models/userModel.js';
 import jwt from 'jsonwebtoken';
 import { v2 as cloudinary } from 'cloudinary';
-import { uploadToCloudinary } from '../Utility/uploadCloudinary.js';
+import { uploadToCloudinary } from '../utility/uploadCloudinary.js';
 
 
 
