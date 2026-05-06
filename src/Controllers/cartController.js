@@ -4,9 +4,9 @@ import Cart from "../Models/cartModal.js";
 // add to cart
 export const addToCart = async (req, res) => {
     try {
-        const { productId, name, size, price } = req.body;
-        if (!productId || !name || !size || !price) {
-            return res.status(400).json({ success: false, message: 'Please provide product id, name, size and price' });
+        const { productId, size } = req.body;
+        if (!productId || !size) {
+            return res.status(400).json({ success: false, message: 'Please provide productId and size' });
         }
         const existingCart = await Cart.findOne({ productId, user: req.user._id });
         if (existingCart) {
@@ -16,9 +16,7 @@ export const addToCart = async (req, res) => {
         const cart = new Cart({
             user: req.user._id,
             productId,
-            name,
-            size,
-            price
+            size
         })
         await cart.save();
         const updatedCart = await Cart.find({ user: req.user._id }).populate('productId');
@@ -31,13 +29,18 @@ export const addToCart = async (req, res) => {
 // get cart 
 export const getCart = async (req, res) => {
     try {
-        const cart = await Cart.find({ user: req.user._id }).populate('productId', 'name price size quantity');
-        if (!cart) {
-            return res.status(200).json({ success: true, message: 'Cart not found' });
+        const cart = await Cart.find({ user: req.user._id }).populate('productId');
+        if (cart.length === 0) {
+            return res.status(200).json({ success: true, message: 'Cart is empty' });
         }
-        return res.status(200).json({ success: true, message: 'Cart found successfully', cartlenght: cart.length, cart });
+        // remove delete product 
+        const validCart = cart.filter(item => item.productId !== null);
+        if (validCart.length === 0) {
+            return res.status(200).json({ success: true, message: 'cart is empty' });
+        }
+        return res.status(200).json({ success: true, message: 'Cart found successfully', cartlenght: cart.length, cart: validCart });
     } catch (error) {
-        return res.status(500).json({ message: 'error in getting cart', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in getting cart', error: error.message });
     }
 };
 
@@ -48,7 +51,7 @@ export const deleteCart = async (req, res) => {
         if (!item) {
             return res.status(200).json({ success: true, message: 'Item already removed' });
         }
-        const upadatedCart = await Cart.find({ user: req.user._id }).populate('productId');
+        const updatedCart = await Cart.find({ user: req.user._id }).populate('productId');
         return res.status(200).json({ success: true, message: 'Cart deleted successfully', cart: updatedCart });
     } catch (error) {
         return res.status(500).json({
@@ -65,16 +68,16 @@ export const updateQuantity = async (req, res) => {
     try {
         const { quantity } = req.body;
         if (!quantity) {
-            return res.status(400).json({ message: 'Please provide quantity' });
+            return res.status(200).json({ success: true, message: 'Please provide quantity' });
         }
         const cart = await Cart.findOneAndUpdate({ _id: req.params.id, user: req.user._id }, { $set: { quantity } }, { returnDocument: 'after' });
         if (!cart) {
-            return res.status(404).json({ message: 'Cart not found' });
+            return res.status(200).json({ success: true, message: 'Cart not found' });
         }
         // updated cart quantity
         const updatedCart = await Cart.find({ user: req.user._id }).populate('productId');
         return res.status(200).json({ message: 'Quantity updated successfully', cart: updatedCart });
     } catch (error) {
-        return res.status(500).json({ message: 'error in updating quantity', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in updating quantity', error: error.message });
     }
 };
