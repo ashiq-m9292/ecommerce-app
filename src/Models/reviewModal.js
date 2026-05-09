@@ -18,6 +18,11 @@ const reviewSchema = new mongoose.Schema({
     },
     comment: {
         type: String,
+        trim: true,
+    },
+    isRated: {
+        type: Boolean,
+        default: false
     },
     readableDate: {
         type: String,
@@ -32,6 +37,7 @@ const reviewSchema = new mongoose.Schema({
         default: Date.now
     }
 }, { timestamps: true });
+reviewSchema.index({ productId: 1, user: 1 }, { unique: true });
 
 const Review = mongoose.model("Review", reviewSchema);
 

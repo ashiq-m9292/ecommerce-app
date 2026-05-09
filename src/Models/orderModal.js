@@ -61,8 +61,16 @@ const orderSchema = new mongoose.Schema({
             }
         }
     ],
+    itemTotal: {
+        type: String,
+        required: true
+    },
+    deliveryCharges: {
+        type: String,
+        required: true
+    },
     totalAmount: {
-        type: Number,
+        type: String,
         required: true
     },
     paymentStatus: {

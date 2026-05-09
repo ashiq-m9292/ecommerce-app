@@ -5,8 +5,11 @@ export const createAddress = async (req, res) => {
     try {
         const { street, village, city, state, pincode, phoneNumber, isDefault } = req.body;
         if (!street || !village || !city || !state || !pincode || !phoneNumber) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        };
+        // check if address already exists
+        const address = await Address.find({ user: req.user._id });
+        const defaultAddress = address.length === 0 ? true : false;
         const newAddress = new Address({
             user: req.user._id,
             street,
@@ -15,22 +18,26 @@ export const createAddress = async (req, res) => {
             state,
             pincode,
             phoneNumber,
-            isDefault,
+            isDefault: defaultAddress
         });
         await newAddress.save();
-        res.status(201).json({ message: 'Address created successfully', address: newAddress });
+        const updatedAddress = await Address.find({ user: req.user._id });
+        return res.status(201).json({ success: true, message: 'Address created successfully', address: updatedAddress });
     } catch (error) {
-        res.status(500).json({ message: 'error in creating address', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in creating address', error: error.message });
     }
 };
 
 // get all addresses of user 
 export const getAllUserAddresses = async (req, res) => {
     try {
-        const addresses = await Address.find({ user: req.user._id });
-        res.status(200).json({ addresses });
+        const address = await Address.find({ user: req.user._id });
+        if (address.length === 0) {
+            return res.status(200).json({ success: true, message: 'No addresses' })
+        }
+        return res.status(200).json({ success: true, message: 'addresses found successfully', address: address })
     } catch (error) {
-        res.status(500).json({ message: 'error in getting user addresses', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in getting user addresses', error: error.message });
     }
 };
 
@@ -38,18 +45,22 @@ export const getAllUserAddresses = async (req, res) => {
 export const updateAddress = async (req, res) => {
     try {
         const { street, village, city, state, pincode, phoneNumber } = req.body;
-        const address = await Address.findOneAndUpdate(
-            { _id: req.params.id, user: req.user._id },
-            { street, village, city, state, pincode, phoneNumber },
-            { new: true }
-        );
+        address = await Address.findOne({ _id: req.params.id, user: req.user._id });
         if (!address) {
-            return res.status(404).json({ message: 'Address not found' });
+            return res.status(200).json({ success: true, message: 'Address not found' });
         }
-        res.status(200).json({ message: 'Address updated successfully', address });
+        if (street) address.street = street;
+        if (village) address.village = village;
+        if (city) address.city = city;
+        if (state) address.state = state;
+        if (pincode) address.pincode = pincode;
+        if (phoneNumber) address.phoneNumber = phoneNumber;
+        await address.save();
+        const updatedAddress = await Address.find({ user: req.user._id });
+        return res.status(200).json({ success: true, message: 'Address updated successfully', address: updatedAddress });
 
     } catch (error) {
-        res.status(500).json({ message: 'error in updating address', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in updating address', error: error.message });
     }
 };
 
@@ -58,11 +69,12 @@ export const deleteAddress = async (req, res) => {
     try {
         const address = await Address.findOneAndDelete({ _id: req.params.id, user: req.user._id });
         if (!address) {
-            return res.status(404).json({ message: 'Address not found' });
+            return res.status(200).json({ success: true, message: 'Already removed' });
         }
-        res.status(200).json({ message: 'Address deleted successfully' });
+        const updatedAddress = await Address.find({ user: req.user._id });
+        return res.status(200).json({ success: true, message: 'Address deleted successfully', address: updatedAddress });
     } catch (error) {
-        res.status(500).json({ message: 'error in deleting address', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in deleting address', error: error.message });
     }
 };
 
@@ -72,12 +84,13 @@ export const setDefaultAddress = async (req, res) => {
 
         await Address.updateMany({ user: req.user._id }, { isDefault: false });
 
-        const address = await Address.findOneAndUpdate({ _id: req.params.id, user: req.user._id }, { isDefault: true }, { new: true });
+        const address = await Address.findOneAndUpdate({ _id: req.params.id, user: req.user._id }, { isDefault: true }, { returnDocument: 'after' });
         if (!address) {
-            return res.status(404).json({ message: 'Address not found' });
+            return res.status(404).json({ success: false, message: 'Address not found' });
         }
-        res.status(200).json({ message: 'Default address set successfully', address });
+        const updatedAddress = await Address.find({ user: req.user._id });
+        return res.status(200).json({ success: true, message: 'Default address set successfully', address: updatedAddress });
     } catch (error) {
-        res.status(500).json({ message: 'error in setting default address', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in setting default address', error: error.message });
     }
 };

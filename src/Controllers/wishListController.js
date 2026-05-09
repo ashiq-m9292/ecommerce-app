@@ -18,7 +18,7 @@ export const addToWishList = async (req, res) => {
         })
         await wishList.save();
         const updatedWishList = await WishList.find({ user: req.user._id }).populate('productId');
-        return res.status(201).json({ message: 'add to wishList successfully', wishList: updatedWishList });
+        return res.status(201).json({ success: true, message: 'add to wishList successfully', wishList: updatedWishList });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in adding to wishList', error: error.message });
     }
@@ -38,7 +38,7 @@ export const getAllWishLists = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: 'WishLists found successfully', wishLists: validWishLists });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'error in getting wishLists', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in getting wishLists', error: error.message });
     }
 };
 
@@ -51,8 +51,8 @@ export const deleteWishList = async (req, res) => {
         }
         const updatedWishList = await WishList.find({ user: req.user._id }).populate('productId');
         return res.status(200).json({ success: true, message: 'WishList deleted successfully', wishList: updatedWishList });
-        res.status(200).json({ message: 'WishList deleted successfully' });
+        res.status(200).json({ success: true, message: 'WishList deleted successfully' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'error in deleting wishList', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in deleting wishList', error: error.message });
     }
 };

@@ -10,13 +10,13 @@ export const createUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
-            return res.status(400).json({ message: 'Please provide name, email and password' });
+            return res.status(200).json({ success: true, message: 'Please provide name, email and password' });
         }
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(200).json({ success: true, message: 'User already exists' });
         }
 
         // create new user
@@ -26,10 +26,10 @@ export const createUser = async (req, res) => {
             password
         });
         await newUser.save();
-        res.status(201).json({ message: 'User created successfully', user: newUser });
+        return res.status(201).json({ success: true, message: 'User created successfully', user: newUser });
 
     } catch (error) {
-        res.status(500).json({ message: 'error in creating user', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in creating user', error: error.message });
     }
 };
 
@@ -38,43 +38,43 @@ export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
+            return res.status(200).json({ success: true, message: 'Please provide email and password' });
         }
 
         // Check if user exists
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+            return res.status(200).json({ success: true, message: 'Invalid email or password' });
         }
 
         //    password compare function
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+            return res.status(400).json({ success: false, message: 'Invalid email or password' });
         }
 
         // ṭoken generation
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         // send response save cookie
-        res.cookie('token', token, {
+        return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 24 * 60 * 60 * 1000 // 1 day
-        }).json({ message: 'User login in successfully', name: user.name, email: user.email, token: token });
+        }).json({ success: true, message: 'User login in successfully', name: user.name, email: user.email, token: token });
 
     } catch (error) {
-        res.status(500).json({ message: 'error in login user', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in login user', error: error.message });
     }
 };
 
 // logout user
 export const logoutUser = (req, res) => {
     try {
-        res.clearCookie('token').json({ message: 'User logged out successfully' });
+        return res.status(200).clearCookie('token').json({ success: true, message: 'User logged out successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'error in logout user', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in logout user', error: error.message });
     }
 };
 
@@ -82,9 +82,9 @@ export const logoutUser = (req, res) => {
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.find();
-        res.status(200).json({ users });
+        return res.status(200).json({ success: true, message: 'Users found successfully', users });
     } catch (error) {
-        res.status(500).json({ message: 'error in getting all users', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in getting all users', error: error.message });
     }
 };
 
@@ -93,9 +93,9 @@ export const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
-        res.status(200).json({ message: 'User deleted successfully' });
+        return res.status(200).json({ success: true, message: 'User deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'error in deleting user', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in deleting user', error: error.message });
     }
 };
 
@@ -105,10 +105,10 @@ export const profilePic = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) {
 
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
         if (!req.file) {
-            return res.status(400).json({ message: 'Please provide a file' });
+            return res.status(200).json({ success: true, message: 'Please provide a file' });
         };
 
         // delete existing profile picture from cloudinary if exists
@@ -125,10 +125,10 @@ export const profilePic = async (req, res) => {
             url: result.secure_url
         };
         await user.save();
-        res.status(200).json({ message: 'Profile picture created successfully', profilePicture: user.profilePicture });
+        return res.status(200).json({ success: true, message: 'Profile picture created successfully', profilePicture: user.profilePicture });
 
     } catch (error) {
-        res.status(500).json({ message: 'error in profilePic user', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in profilePic user', error: error.message });
 
     }
 }
@@ -140,8 +140,8 @@ export const getProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.status(200).json({ user });
+        return res.status(200).json({ success: true, message: 'Profile found successfully', user });
     } catch (error) {
-        res.status(500).json({ message: 'error in getting profile', error: error.message });
+        return res.status(500).json({ success: false, message: 'error in getting profile', error: error.message });
     }
 }

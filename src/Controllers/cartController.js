@@ -6,7 +6,7 @@ export const addToCart = async (req, res) => {
     try {
         const { productId, size } = req.body;
         if (!productId || !size) {
-            return res.status(400).json({ success: false, message: 'Please provide productId and size' });
+            return res.status(200).json({ success: true, message: 'Please provide productId and size' });
         }
         const existingCart = await Cart.findOne({ productId, user: req.user._id });
         if (existingCart) {
@@ -76,7 +76,7 @@ export const updateQuantity = async (req, res) => {
         }
         // updated cart quantity
         const updatedCart = await Cart.find({ user: req.user._id }).populate('productId');
-        return res.status(200).json({ message: 'Quantity updated successfully', cart: updatedCart });
+        return res.status(200).json({success: true, message: 'Quantity updated successfully', cart: updatedCart });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in updating quantity', error: error.message });
     }
