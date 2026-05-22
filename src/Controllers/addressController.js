@@ -35,7 +35,7 @@ export const getAllUserAddresses = async (req, res) => {
         if (address.length === 0) {
             return res.status(200).json({ success: true, message: 'No addresses' })
         }
-        return res.status(200).json({ success: true, message: 'addresses found successfully', address: address })
+        return res.status(200).json({ success: true, message: 'addresses found successfully', count: address.length, address: address })
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in getting user addresses', error: error.message });
     }
@@ -45,7 +45,7 @@ export const getAllUserAddresses = async (req, res) => {
 export const updateAddress = async (req, res) => {
     try {
         const { street, village, city, state, pincode, phoneNumber } = req.body;
-        address = await Address.findOne({ _id: req.params.id, user: req.user._id });
+        const address = await Address.findOne({ _id: req.params.id, user: req.user._id });
         if (!address) {
             return res.status(200).json({ success: true, message: 'Address not found' });
         }
@@ -69,8 +69,11 @@ export const deleteAddress = async (req, res) => {
     try {
         const address = await Address.findOneAndDelete({ _id: req.params.id, user: req.user._id });
         if (!address) {
-            return res.status(200).json({ success: true, message: 'Already removed' });
-        }
+            return res.status(404).json({ success: false, message: 'Address not found' });
+        };
+        if (address.isDefault === true) {
+            const newDefaultAddress = await Address.findOneAndUpdate({ user: req.user._id }, { isDefault: true }, { returnDocument: 'after' });
+        };
         const updatedAddress = await Address.find({ user: req.user._id });
         return res.status(200).json({ success: true, message: 'Address deleted successfully', address: updatedAddress });
     } catch (error) {
