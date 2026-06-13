@@ -54,14 +54,14 @@ export const loginUser = async (req, res) => {
         }
 
         // ṭoken generation
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
         // send response save cookie
         return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            maxAge: 10 * 365 * 24 * 60 * 60 * 1000 // 10 years
         }).json({ success: true, message: 'User login in successfully', name: user.name, email: user.email, token: token });
 
     } catch (error) {
@@ -72,7 +72,8 @@ export const loginUser = async (req, res) => {
 // logout user
 export const logoutUser = (req, res) => {
     try {
-        return res.status(200).clearCookie('token').json({ success: true, message: 'User logged out successfully' });
+        res.clearCookie('token');
+        return res.status(200).json({ success: true, message: 'User logout successfully' });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in logout user', error: error.message });
     }
@@ -99,44 +100,10 @@ export const deleteUser = async (req, res) => {
     }
 };
 
-// create or update profile picture
-export const profilePic = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) {
-
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-        if (!req.file) {
-            return res.status(200).json({ success: true, message: 'Please provide a file' });
-        };
-
-        // delete existing profile picture from cloudinary if exists
-        if (user.profilePicture && user.profilePicture.public_id) {
-            await cloudinary.uploader.destroy(user.profilePicture.public_id);
-        }
-
-        // upload profile picture to cloudinary
-        const result = await uploadToCloudinary(req.file.buffer, 'profile-picture');
-
-        // Update user's profile picture URL
-        user.profilePicture = {
-            public_id: result.public_id,
-            url: result.secure_url
-        };
-        await user.save();
-        return res.status(200).json({ success: true, message: 'Profile picture created successfully', profilePicture: user.profilePicture });
-
-    } catch (error) {
-        return res.status(500).json({ success: false, message: 'error in profilePic user', error: error.message });
-
-    }
-}
-
 // get profile 
 export const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user.id)
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -145,3 +112,34 @@ export const getProfile = async (req, res) => {
         return res.status(500).json({ success: false, message: 'error in getting profile', error: error.message });
     }
 }
+
+
+//creating profile picture 
+export const profilePicture = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'user not found' })
+        };
+        const image = req.file;
+        if (!image) {
+            return res.status(404).json({ success: false, message: 'please provide image' })
+        };
+        if (user.picture.public_id) {
+            await cloudinary.uploader.destroy(user.picture.public_id)
+        }
+        const result = await uploadToCloudinary(image.buffer, 'picture');
+        user.picture = {
+            public_id: result.public_id,
+            url: result.secure_url
+        };
+        await user?.save();
+        return res.status(200).json({ success: true, message: 'profile updated successfully', user })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'error in creating image',
+            error: error.message
+        });
+    }
+};

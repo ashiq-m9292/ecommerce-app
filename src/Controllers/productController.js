@@ -157,3 +157,25 @@ export const deleteProduct = async (req, res) => {
         return res.status(500).json({ success: false, message: 'error in deleting product', error: error.message });
     }
 };
+
+
+// search api
+export const searchProducts = async (req, res) => {
+    try {
+        const { query } = req.params;
+        const products = await Product.find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } },
+                { brand: { $regex: query, $options: 'i' } },
+                { category: { $regex: query, $options: 'i' } }
+            ]
+        });
+        if (!products || products.length === 0) {
+            return res.status(200).json({ success: true, message: 'No products found' });
+        };
+        return res.status(200).json({ success: true, message: 'Products found successfully', products: products });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'error in getting products', error: error.message });
+    }
+};

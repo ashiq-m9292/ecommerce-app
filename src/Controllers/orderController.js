@@ -37,8 +37,8 @@ export const createOrder = async (req, res) => {
             await product.save();
         }
         // add delivery charges
-        let deliveryCharge = 50;
-        if (totalItemPrice > 200) {
+        let deliveryCharge = 20;
+        if (totalItemPrice >= 200) {
             deliveryCharge = 0;
         }
 

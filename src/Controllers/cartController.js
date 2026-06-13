@@ -4,8 +4,8 @@ import Cart from "../Models/cartModal.js";
 // add to cart
 export const addToCart = async (req, res) => {
     try {
-        const { productId, size } = req.body;
-        if (!productId || !size) {
+        const { productId, size, price } = req.body;
+        if (!productId || !size || !price) {
             return res.status(200).json({ success: true, message: 'Please provide productId and size' });
         }
         const existingCart = await Cart.findOne({ productId, user: req.user._id });
@@ -16,8 +16,9 @@ export const addToCart = async (req, res) => {
         const cart = new Cart({
             user: req.user._id,
             productId,
-            size
-        })
+            size,
+            price
+        });
         await cart.save();
         const updatedCart = await Cart.find({ user: req.user._id }).populate('productId');
         return res.status(201).json({ success: true, message: 'add to cart successfully', cart: updatedCart });
@@ -76,7 +77,7 @@ export const updateQuantity = async (req, res) => {
         }
         // updated cart quantity
         const updatedCart = await Cart.find({ user: req.user._id }).populate('productId');
-        return res.status(200).json({success: true, message: 'Quantity updated successfully', cart: updatedCart });
+        return res.status(200).json({ success: true, message: 'Quantity updated successfully', cart: updatedCart });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in updating quantity', error: error.message });
     }

@@ -17,12 +17,14 @@ const userSchema = new mongoose.Schema({
     fcmToken: {
         type: String,
     },
-    profilePicture: {
+    picture: {
         public_id: {
             type: String,
+            default: ''
         },
         url: {
             type: String,
+            default: ''
         }
     },
     role: {
@@ -46,9 +48,9 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // hash password before saving to database
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

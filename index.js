@@ -34,6 +34,7 @@ import reviewRouter from './src/Routes/reviewRoutes.js';
 import cartRouter from './src/Routes/cartRoutes.js';
 import wishListRouter from './src/Routes/wishListRoutes.js';
 import orderRouter from './src/Routes/orderRoutes.js';
+import bannerRouter from './src/Routes/BannerRoutes.js';
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/address', addressRouter);
 app.use('/api/v1/product', productRouter);
@@ -41,6 +42,7 @@ app.use('/api/v1/review', reviewRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/wishlist', wishListRouter);
 app.use('/api/v1/order', orderRouter);
+app.use('/api/v1/banner', bannerRouter);
 
 // cloudinary config 
 import { v2 as cloudinary } from 'cloudinary';
