@@ -32,6 +32,14 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
+    isBlocked: {
+        type: Boolean,
+        default: false
+    },
+    isDark: {
+        type: Boolean,
+        default: false
+    },
     readableDate: {
         type: String,
         default: new Date().toLocaleDateString()

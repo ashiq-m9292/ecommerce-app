@@ -159,23 +159,39 @@ export const deleteProduct = async (req, res) => {
 };
 
 
-// search api
+// search and filter api
 export const searchProducts = async (req, res) => {
     try {
-        const { query } = req.params;
-        const products = await Product.find({
-            $or: [
-                { name: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } },
-                { brand: { $regex: query, $options: 'i' } },
-                { category: { $regex: query, $options: 'i' } }
-            ]
-        });
-        if (!products || products.length === 0) {
-            return res.status(200).json({ success: true, message: 'No products found' });
+        const { keyword, category, minPrice, maxPrice } = req.query;
+        const filter = {};
+        if (keyword) {
+            filter.name = {
+                $regex: keyword,
+                $options: 'i'
+            };
         };
-        return res.status(200).json({ success: true, message: 'Products found successfully', products: products });
+        if (category) {
+            filter.category = category;
+        };
+
+        if (minPrice || maxPrice) {
+            const priceFilter = {};
+
+            if (minPrice) priceFilter.$gte = Number(minPrice);
+            if (maxPrice) priceFilter.$lte = Number(maxPrice);
+
+            filter.sizes = {
+                $elemMatch: {
+                    price: priceFilter
+                }
+            };
+        } const products = await Product.find(filter);
+        if (products.length === 0) {
+            return res.status(200).json({ success: true, message: 'No products found' });
+        }
+        return res.status(200).json({ success: true, message: 'Products found successfully', productlength: products.length, products: products });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in getting products', error: error.message });
     }
 };
+
