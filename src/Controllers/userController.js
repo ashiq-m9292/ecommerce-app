@@ -147,11 +147,13 @@ export const profilePicture = async (req, res) => {
 // dark mode toggle api
 export const darkModeToggle = async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.user.id, { $set: { isDark: !req.user.isDark } }, { returnDocument: 'after' });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ success: false, message: 'user not found' })
         };
-        return res.status(200).json({ success: true, message: 'dark mode updated successfully', user })
+        user.isDark = !user.isDark;
+        await user?.save();
+        return res.status(200).json({ success: true, message: 'dark mode updated successfully', user: user })
     } catch (error) {
         return res.status(500).json({
             success: false,
