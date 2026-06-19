@@ -153,7 +153,7 @@ export const darkModeToggle = async (req, res) => {
         };
         user.isDark = !user.isDark;
         await user?.save();
-        return res.status(200).json({ success: true, message: 'dark mode updated successfully', user: user })
+        return res.status(200).json({ success: true, message: 'dark mode updated successfully', darkmode: user.isDark })
     } catch (error) {
         return res.status(500).json({
             success: false,
@@ -162,3 +162,20 @@ export const darkModeToggle = async (req, res) => {
         });
     }
 };
+
+// get dark mode api
+export const getDarkMode = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'user not found' })
+        };
+        return res.status(200).json({ success: true, message: 'dark mode found successfully', darkmode: user.isDark })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'error in getting dark mode',
+            error: error.message
+        });
+    }   
+}

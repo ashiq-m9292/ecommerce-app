@@ -1,6 +1,6 @@
 import express from 'express';
 const userRouter = express.Router();
-import { createUser, loginUser, logoutUser, getAllUsers, deleteUser, getProfile, profilePicture, darkModeToggle } from '../Controllers/userController.js';
+import { createUser, loginUser, logoutUser, getAllUsers, deleteUser, getProfile, profilePicture, darkModeToggle, getDarkMode } from '../Controllers/userController.js';
 import { isAuth, isAdmin } from '../MiddleWare/authMiddleware.js';
 import { uploadFile } from '../MiddleWare/upload.js';
 
@@ -13,6 +13,7 @@ userRouter.delete('/deleteuser/:id', isAuth, isAdmin, deleteUser);
 userRouter.get('/profile', isAuth, getProfile);
 userRouter.put('/picture', isAuth, uploadFile.single('image'), profilePicture);
 userRouter.put('/darkmode', isAuth, darkModeToggle);
+userRouter.get('/getdarkmode', isAuth, getDarkMode);
 
 
 export default userRouter;
