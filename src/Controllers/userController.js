@@ -2,6 +2,7 @@ import User from '../Models/userModel.js';
 import jwt from 'jsonwebtoken';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadToCloudinary } from '../utility/uploadCloudinary.js';
+import { adminSendNotification } from '../utility/sendNotification.js';
 
 
 
@@ -36,7 +37,7 @@ export const createUser = async (req, res) => {
 // login user 
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, fcmToken } = req.body;
         if (!email || !password) {
             return res.status(200).json({ success: true, message: 'Please provide email and password' });
         }
@@ -55,6 +56,10 @@ export const loginUser = async (req, res) => {
 
         // ṭoken generation
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
+        // update fcmToken
+        user.fcmToken = fcmToken;
+        await user.save();
 
         // send response save cookie
         return res.cookie('token', token, {
@@ -177,5 +182,33 @@ export const getDarkMode = async (req, res) => {
             message: 'error in getting dark mode',
             error: error.message
         });
-    }   
-}
+    }
+};
+
+
+
+
+// test notification api
+export const testNotification = async (req, res) => {
+    try {
+       const {token} = req.body;
+        if (!token) {
+            return res.status(404).json({ success: false, message: 'Please provide token' })
+        };
+        await adminSendNotification({
+            token,
+            title: 'Test Notification',
+            body: 'This is a test notification',
+            data: {
+                screen: 'home'
+            }
+        })
+        return res.status(200).json({ success: true, message: 'Notification sent successfully' })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'error in sending notification',
+            error: error.message
+        });
+    }
+};

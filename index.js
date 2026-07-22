@@ -2,6 +2,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// firebase
+import "./src/Config/firebase.js";
+
 // express
 import express from 'express';
 const app = express();
