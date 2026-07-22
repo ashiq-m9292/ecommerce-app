@@ -2,7 +2,7 @@ import User from '../Models/userModel.js';
 import jwt from 'jsonwebtoken';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadToCloudinary } from '../utility/uploadCloudinary.js';
-import { adminSendNotification } from '../utility/sendNotification.js';
+import { sendNotification } from '../utility/notification.js';
 
 
 
@@ -186,29 +186,22 @@ export const getDarkMode = async (req, res) => {
 };
 
 
-
-
-// test notification api
+// test notification
 export const testNotification = async (req, res) => {
     try {
-       const {token} = req.body;
-        if (!token) {
-            return res.status(404).json({ success: false, message: 'Please provide token' })
-        };
-        await adminSendNotification({
+        const {token} = req.body;
+        await sendNotification({
             token,
             title: 'Test Notification',
             body: 'This is a test notification',
             data: {
-                screen: 'home'
+                screen: 'BottomTab',
             }
         })
-        return res.status(200).json({ success: true, message: 'Notification sent successfully' })
+        return res.status(200).json({ success: true, message: 'Notification sent successfully' });
     } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: 'error in sending notification',
-            error: error.message
-        });
+        console.log('error in sending notification', error);
     }
-};
+}
+
+

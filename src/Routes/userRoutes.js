@@ -1,6 +1,17 @@
 import express from 'express';
 const userRouter = express.Router();
-import { createUser, loginUser, logoutUser, getAllUsers, deleteUser, getProfile, profilePicture, darkModeToggle, getDarkMode, testNotification } from '../Controllers/userController.js';
+import {
+    createUser,
+    loginUser,
+    logoutUser,
+    getAllUsers,
+    deleteUser,
+    getProfile,
+    profilePicture,
+    darkModeToggle,
+    getDarkMode,
+    testNotification
+} from '../Controllers/userController.js';
 import { isAuth, isAdmin } from '../MiddleWare/authMiddleware.js';
 import { uploadFile } from '../MiddleWare/upload.js';
 

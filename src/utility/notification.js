@@ -1,20 +1,20 @@
 import { getMessaging } from "firebase-admin/messaging";
 
-export const adminSendNotification = async ({token, title, body, data = {}}) => {
+export const sendNotification = async ({ token, title, body, data = {} }) => {
     try {
         const message = {
             token,
             notification: {
                 title,
-                body,
+                body
             },
-            data,
-        }
+            data
+        };
         const response = await getMessaging().send(message);
-        console.log("Successfully sent message:", response);
+        console.log('Successfully sent message:', response);
         return response;
     } catch (error) {
-        console.log("error in sending notification", error);
-        return error;
+        console.log('error in sending notification', error);
+        return;
     }
 };
