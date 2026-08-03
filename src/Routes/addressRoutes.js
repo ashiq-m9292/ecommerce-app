@@ -10,6 +10,4 @@ addressRouter.delete('/deleteaddress/:id', isAuth, deleteAddress);
 addressRouter.put('/setdefault/:id', isAuth, setDefaultAddress);
 
 
-
-
 export default addressRouter;

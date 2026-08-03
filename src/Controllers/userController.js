@@ -5,7 +5,6 @@ import { uploadToCloudinary } from '../utility/uploadCloudinary.js';
 import { sendNotification } from '../utility/notification.js';
 
 
-
 // create user
 export const createUser = async (req, res) => {
     try {
@@ -37,7 +36,7 @@ export const createUser = async (req, res) => {
 // login user 
 export const loginUser = async (req, res) => {
     try {
-        const { email, password, fcmToken } = req.body;
+        const { email, password, fcmToken, deviceId } = req.body;
         if (!email || !password) {
             return res.status(200).json({ success: true, message: 'Please provide email and password' });
         }
@@ -54,12 +53,13 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid email or password' });
         }
 
+        // update fcmToken and deviceId
+        user.fcmToken = fcmToken;
+        user.deviceId = deviceId;
+        await user.save();
+
         // ṭoken generation
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
-        // update fcmToken
-        user.fcmToken = fcmToken;
-        await user.save();
 
         // send response save cookie
         return res.cookie('token', token, {
@@ -67,7 +67,7 @@ export const loginUser = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 10 * 365 * 24 * 60 * 60 * 1000 // 10 years
-        }).json({ success: true, message: 'User login in successfully', name: user.name, email: user.email, token: token });
+        }).json({ success: true, message: 'User login in successfully', name: user.name, email: user.email, token: token, fcmToken: user.fcmToken, deviceId: user.deviceId });
 
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in login user', error: error.message });
@@ -116,8 +116,7 @@ export const getProfile = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in getting profile', error: error.message });
     }
-}
-
+};
 
 //creating profile picture 
 export const profilePicture = async (req, res) => {
@@ -185,23 +184,40 @@ export const getDarkMode = async (req, res) => {
     }
 };
 
-
-// test notification
-export const testNotification = async (req, res) => {
+// change password
+export const changePassword = async (req, res) => {
     try {
-        const {token} = req.body;
-        await sendNotification({
-            token,
-            title: 'Test Notification',
-            body: 'This is a test notification',
+        const { oldPassword, newPassword } = req.body;
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Please provide old password and new password' })
+        }
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'user not found' })
+        };
+        const isMatch = await user.comparePassword(oldPassword);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'old password is incorrect' })
+        };
+        user.password = newPassword;
+        await user.save();
+        // send notification to user about password change
+        const message = {
+            token: user.fcmToken,
             data: {
-                screen: 'BottomTab',
+                title: 'Password Changed',
+                body: 'Your password has been changed successfully',
             }
-        })
-        return res.status(200).json({ success: true, message: 'Notification sent successfully' });
+        }
+        await sendNotification(message);
+        return res.status(200).json({ success: true, message: 'password updated successfully' })
     } catch (error) {
-        console.log('error in sending notification', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error in changing password',
+            error: error.message
+        });
     }
-}
+};
 
 

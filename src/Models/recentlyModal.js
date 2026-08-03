@@ -11,11 +11,16 @@ const recentlyViewedSchema = new mongoose.Schema({
         ref: 'Product',
         required: true
     },
-    createdAt: {
+    latestViewedAt: {
         type: Date,
         default: Date.now
-    }
+    },
 }, { timestamps: true });
+
+recentlyViewedSchema.index(
+    { latestViewedAt: 1 },
+    { expireAfterSeconds: 20 }
+)
 
 const RecentlyViewed = mongoose.model("RecentlyViewed", recentlyViewedSchema);
 

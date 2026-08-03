@@ -1,16 +1,28 @@
 import { getMessaging } from "firebase-admin/messaging";
 
-export const sendNotification = async ({ token, title, body, data = {} }) => {
+export const sendNotification = async ({ token, data = {} }) => {
     try {
         const message = {
             token,
-            notification: {
-                title,
-                body
-            },
-            data
+            data,
         };
         const response = await getMessaging().send(message);
+        console.log('Successfully sent message:', response);
+        return response;
+    } catch (error) {
+        console.log('error in sending notification', error);
+        return;
+    }
+};
+
+// multiple user ke liye notification send karne ka function
+export const sendNotificationToMultipleUsers = async ({ tokens, data = {} }) => {
+    try {
+        const message = {
+            tokens,
+            data,
+        };
+        const response = await getMessaging().sendEachForMulticast(message);
         console.log('Successfully sent message:', response);
         return response;
     } catch (error) {

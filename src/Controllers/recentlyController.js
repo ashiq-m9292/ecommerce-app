@@ -24,7 +24,7 @@ export const createViewed = async (req, res) => {
         await viewed.save();
         // save only 10 products and others will be deleted
         const existingViewed = await RecentlyViewed.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(10);
-        if (existingViewed.length > 2) {
+        if (existingViewed.length > 10) {
             await RecentlyViewed.findOneAndDelete({ _id: existingViewed[0]._id });
         };
         const updatedViewed = await RecentlyViewed.find({ user: req.user._id }).populate('productId');

@@ -1,6 +1,7 @@
 import Product from '../Models/productModal.js';
 import { uploadToCloudinary } from '../utility/uploadCloudinary.js';
 import { v2 as cloudinary } from 'cloudinary';
+import { sendNotificationToMultipleUsers } from '../utility/notification.js';
 
 // Create a new product
 export const createProduct = async (req, res) => {
@@ -35,6 +36,23 @@ export const createProduct = async (req, res) => {
             user: req.user._id
         });
         await newProduct.save();
+
+        // send notification to all users
+        const users = await User.find({
+            _id: { $ne: req.user._id },
+            fcmToken: { $exists: true, $ne: null }
+        }, "fcmToken");
+        const tokens = users.map(user => user.fcmToken);
+        const message = {
+            tokens: tokens,
+            data: {
+                title: 'New Product Added',
+                body: `A new product has been added: ${newProduct.name}`,
+                screen: 'ProductDetails',
+                productId: newProduct._id.toString()
+            }
+        };
+        await sendNotificationToMultipleUsers(message);
         return res.status(201).json({ success: true, message: 'Product created successfully', products: newProduct });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in creating product', error: error.message });
@@ -97,6 +115,23 @@ export const updateProduct = async (req, res) => {
         }
 
         await product.save();
+        // send notification to all users
+        const users = await User.find({
+            _id: { $ne: req.user._id },
+            fcmToken: { $exists: true, $ne: null }
+        }, "fcmToken");
+        const tokens = users.map(user => user.fcmToken);
+        const message = {
+            tokens: tokens,
+            data: {
+                title: 'Product Updated',
+                body: `A product has been updated: ${product.name}`,
+                screen: 'ProductDetails',
+                productId: product._id.toString()
+            }
+        };
+        await sendNotificationToMultipleUsers(message);
+
         return res.status(200).json({
             success: true,
             message: 'Product updated successfully',

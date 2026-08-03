@@ -1,6 +1,7 @@
 import Order from "../Models/orderModal.js";
 import Product from "../Models/productModal.js";
 import Cart from "../Models/cartModal.js";
+import { sendNotification } from "../utility/notification.js";
 
 
 export const createOrder = async (req, res) => {
@@ -58,7 +59,20 @@ export const createOrder = async (req, res) => {
         // delete cart items
         for (const item of products) {
             await Cart.findOneAndDelete({ productId: item.productId, user: req.user._id });
-        }
+        };
+
+        // send notification
+        const message = {
+            token: req.user.fcmToken,
+            data: {
+                title: 'Order Placed',
+                body: 'Your order has been placed successfully',
+                screen: OrderDetails,
+                orderId: newOrder._id.toString(),
+            }
+        };
+        await sendNotification(message);
+
         return res.status(201).json({ success: true, message: 'Order created successfully', orders: newOrder });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in creating order', error: error.message });

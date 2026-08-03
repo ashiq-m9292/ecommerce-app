@@ -9,6 +9,9 @@ export const isAuth = async (req, res, next) => {
     try {
         const decodeData = jwt.verify(token, process.env.JWT_SECRET);
         req.user = await User.findById(decodeData.id);
+        if (req.user.deviceToken !== req.headers.deviceToken) {
+            return res.status(403).json({ message: "session expired please login again" });
+        }
         next();
     } catch (error) {
         console.log("error in isAuth middleware", error);

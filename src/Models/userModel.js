@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema({
     fcmToken: {
         type: String,
     },
+    deviceId: {
+        type: String,
+    },
     picture: {
         public_id: {
             type: String,
