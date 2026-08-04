@@ -19,7 +19,7 @@ const recentlyViewedSchema = new mongoose.Schema({
 
 recentlyViewedSchema.index(
     { latestViewedAt: 1 },
-    { expireAfterSeconds: 20 }
+    { expireAfterSeconds: 60 * 60 } //  1 hour
 )
 
 const RecentlyViewed = mongoose.model("RecentlyViewed", recentlyViewedSchema);

@@ -10,7 +10,8 @@ import {
     profilePicture,
     darkModeToggle,
     getDarkMode,
-    changePassword
+    changePassword,
+    testNotification
 } from '../Controllers/userController.js';
 import { isAuth, isAdmin } from '../MiddleWare/authMiddleware.js';
 import { uploadFile } from '../MiddleWare/upload.js';
@@ -26,6 +27,7 @@ userRouter.put('/picture', isAuth, uploadFile.single('image'), profilePicture); 
 userRouter.put('/darkmode', isAuth, darkModeToggle);  // toggle dark mode
 userRouter.get('/getdarkmode', isAuth, getDarkMode);  // get dark mode preference
 userRouter.put('/changepassword', isAuth, changePassword);  // change password
+userRouter.post('/testnotification', isAuth, testNotification);  // test notification
 
 
 export default userRouter;

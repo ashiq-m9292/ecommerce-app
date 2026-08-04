@@ -220,4 +220,29 @@ export const changePassword = async (req, res) => {
     }
 };
 
+// test notification
+export const testNotification = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'user not found' })
+        };
+        if (user.fcmToken) {
+            const message = {
+                token: user.fcmToken,
+                data: {
+                    title: 'Test Notification',
+                    body: 'This is a test notification',
+                }
+            }
+            await sendNotification(message);
+            return res.status(200).json({ success: true, message: 'notification sent successfully' })
+        } else {
+            return res.status(400).json({ success: false, message: 'fcm token not found' })
+        }
+    } catch (error) {
+        res.json({ success: false, message: 'error in sending notification', error: error.message });
+    }
+}
+
 

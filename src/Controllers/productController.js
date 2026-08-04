@@ -1,4 +1,5 @@
 import Product from '../Models/productModal.js';
+import User from '../Models/userModel.js';
 import { uploadToCloudinary } from '../utility/uploadCloudinary.js';
 import { v2 as cloudinary } from 'cloudinary';
 import { sendNotificationToMultipleUsers } from '../utility/notification.js';
@@ -49,7 +50,7 @@ export const createProduct = async (req, res) => {
                 title: 'New Product Added',
                 body: `A new product has been added: ${newProduct.name}`,
                 screen: 'ProductDetails',
-                productId: newProduct._id.toString()
+                productId: `${newProduct._id}`
             }
         };
         await sendNotificationToMultipleUsers(message);
@@ -127,7 +128,7 @@ export const updateProduct = async (req, res) => {
                 title: 'Product Updated',
                 body: `A product has been updated: ${product.name}`,
                 screen: 'ProductDetails',
-                productId: product._id.toString()
+                productId: `${product._id}`
             }
         };
         await sendNotificationToMultipleUsers(message);
