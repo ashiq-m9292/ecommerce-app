@@ -65,7 +65,7 @@ export const loginUser = async (req, res) => {
         return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 10 * 365 * 24 * 60 * 60 * 1000 // 10 years
         }).json({ success: true, message: 'User login in successfully', name: user.name, email: user.email, token: token, fcmToken: user.fcmToken, deviceId: user.deviceId });
 

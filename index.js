@@ -18,9 +18,12 @@ initializeApp({
     credential: cert(serviceAccount),
 });
 
-// cors
+// cors setup with allow origins 
 import cors from 'cors';
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
 
 // express json configuration 
 app.use(express.json());
