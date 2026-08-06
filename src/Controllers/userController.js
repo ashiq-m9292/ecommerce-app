@@ -64,8 +64,8 @@ export const loginUser = async (req, res) => {
         // send response save cookie
         return res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
+            secure: false,
+            sameSite: 'lax',
             maxAge: 10 * 365 * 24 * 60 * 60 * 1000 // 10 years
         }).json({ success: true, message: 'User login in successfully', name: user.name, email: user.email, token: token, fcmToken: user.fcmToken, deviceId: user.deviceId });
 
@@ -77,7 +77,12 @@ export const loginUser = async (req, res) => {
 // logout user
 export const logoutUser = (req, res) => {
     try {
-        res.clearCookie('token');
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+
+        });
         return res.status(200).json({ success: true, message: 'User logout successfully' });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'error in logout user', error: error.message });
